@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Past Simple Detective</title>
+    <style>
+        :root {
+            --bg: #fdfdfd;
+            --text: #2d3436;
+            --primary: #6c5ce7;
+            --success: #00b894;
+            --error: #d63031;
+            --timer-bg: #f1f2f6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f0f3f7;
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #game-card {
+            background: white;
+            width: 100%;
+            max-width: 650px;
+            padding: 50px 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.07);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #timer-bar-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 8px;
+            background: var(--timer-bg);
+        }
+        #timer-bar {
+            height: 100%;
+            width: 100%;
+            background: var(--primary);
+            transition: width 0.1s linear;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #aebbc1;
+        }
+
+        #score { color: var(--success); }
+        #score.minus { color: var(--error); }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 50px;
+            font-weight: 600;
+            text-align: center;
+            color: #636e72;
+        }
+
+        #sentence-box {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            line-height: 2.5;
+            font-size: 1.8rem;
+            gap: 2px 8px;
+        }
+
+        .word {
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 8px;
+            transition: 0.2s;
+            user-select: none;
+        }
+
+        .word:hover {
+            background-color: #f1f0ff;
+            color: var(--primary);
+        }
+
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(45, 52, 54, 0.15);
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+
+        #modal {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 35px;
+            border-radius: 25px;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.15);
+            z-index: 20;
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin: 12px 0;
+            border: 2px solid #f1f2f6;
+            background: white;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-card">
+    <div id="timer-bar-container"><div id="timer-bar"></div></div>
+    <div class="header">
+        <div>Progress: <span id="current-num">1</span>/20</div>
+        <div>Score: <span id="score">0</span></div>
+    </div>
+    <h2>Find the mistake:</h2>
+    <div id="sentence-box"></div>
+</div>
+
+<div id="overlay"></div>
+<div id="modal">
+    <div style="margin-bottom: 20px; font-weight: 800; color: #b2bec3; font-size: 0.8rem; text-transform: uppercase;">Correct it:</div>
+    <div id="options-box"></div>
+</div>
+
+<script>
+// Тщательно выверенная база (1 ошибка на предложение)
+const database = [
+    { s: ["I", "playes", "tennis", "yesterday", "."], err: 1, fix: ["played", "plays", "playing"], correct: 0 },
+    { s: ["She", "not", "visit", "her", "grandma", "last", "year", "."], err: 1, fix: ["didn't", "doesn't", "no"], correct: 0 },
+    { s: ["Did", "you", "watched", "TV", "last", "night", "?"], err: 2, fix: ["watch", "watches", "watching"], correct: 0 },
+    { s: ["They", "helpeding", "me", "a", "week", "ago", "."], err: 1, fix: ["helped", "help", "helps"], correct: 0 },
+    { s: ["Do", "he", "cook", "dinner", "yesterday", "?"], err: 0, fix: ["Did", "Does", "Done"], correct: 0 },
+    { s: ["We", "didn't", "liked", "the", "party", "."], err: 2, fix: ["like", "likes", "liking"], correct: 0 },
+    { s: ["They", "stoppt", "the", "car", "a", "minute", "ago", "."], err: 1, fix: ["stopped", "stoped", "stops"], correct: 0 },
+    { s: ["Did", "she", "work", "last", "Sunday", "."], err: 5, fix: ["?", "!", ","], correct: 0 },
+    { s: ["He", "lookt", "at", "the", "map", "yesterday", "."], err: 1, fix: ["looked", "look", "looking"], correct: 0 },
+    { s: ["I", "not", "wash", "my", "hands", "an", "hour", "ago", "."], err: 1, fix: ["didn't", "doesn't", "wasn't"], correct: 0 },
+    { s: ["It", "rain", "a", "lot", "last", "month", "."], err: 1, fix: ["rained", "rains", "raining"], correct: 0 },
+    { s: ["Does", "it", "happen", "two", "days", "ago", "?"], err: 0, fix: ["Did", "Do", "Done"], correct: 0 },
+    { s: ["She", "smileing", "at", "me", "yesterday", "."], err: 1, fix: ["smiled", "smiles", "smile"], correct: 0 },
+    { s: ["We", "didn't", "jumped", "high", "last", "night", "."], err: 2, fix: ["jump", "jumps", "jumping"], correct: 0 },
+    { s: ["They", "walks", "to", "school", "yesterday", "."], err: 1, fix: ["walked", "walk", "walking"], correct: 0 },
+    { s: ["Did", "you", "call", "me", "last", "night", "."], err: 6, fix: ["?", "!", "..."], correct: 0 },
+    { s: ["He", "finishs", "the", "test", "an", "hour", "ago", "."], err: 1, fix: ["finished", "finish", "finishing"], correct: 0 },
+    { s: ["I", "am", "stayed", "home", "last", "Monday", "."], err: 1, fix: ["(удалить)", "was", "did"], correct: 0 },
+    { s: ["Do", "they", "arrive", "on", "time", "yesterday", "?"], err: 0, fix: ["Did", "Does", "Doing"], correct: 0 },
+    { s: ["We", "danced", "all", "night", "last", "Saturday", "?"], err: 6, fix: [".", "!", "..."], correct: 0 }
+];
+
+let score = 0;
+let currentIdx = 0;
+let gameData = [];
+let timerInterval;
+const TIME_LIMIT = 15;
+
+function init() {
+    gameData = [...database].sort(() => Math.random() - 0.5).slice(0, 20);
+    renderQuestion();
+}
+
+function startTimer() {
+    let timeLeft = TIME_LIMIT;
+    const timerBar = document.getElementById('timer-bar');
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timeLeft -= 0.1;
+        const percentage = (timeLeft / TIME_LIMIT) * 100;
+        timerBar.style.width = percentage + "%";
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            handleTimeOut();
+        }
+    }, 100);
+}
+
+function handleTimeOut() {
+    score -= 2;
+    updateScore();
+    currentIdx++;
+    renderQuestion();
+}
+
+function renderQuestion() {
+    if (currentIdx >= gameData.length) {
+        clearInterval(timerInterval);
+        showFinish();
+        return;
+    }
+    document.getElementById('current-num').innerText = currentIdx + 1;
+    const box = document.getElementById('sentence-box');
+    box.innerHTML = '';
+    const item = gameData[currentIdx];
+    item.s.forEach((word, i) => {
+        const span = document.createElement('span');
+        span.className = 'word';
+        span.innerText = word;
+        span.onclick = () => checkWord(i);
+        box.appendChild(span);
+    });
+    startTimer();
+}
+
+function checkWord(i) {
+    const item = gameData[currentIdx];
+    if (i === item.err) {
+        clearInterval(timerInterval);
+        showModal(item);
+    } else {
+        score -= 2;
+        updateScore();
+    }
+}
+
+function showModal(item) {
+    document.getElementById('modal').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+    const optBox = document.getElementById('options-box');
+    optBox.innerHTML = '';
+    item.fix.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        btn.onclick = () => {
+            if (idx === item.correct) {
+                score += 1;
+                updateScore();
+                closeModal();
+                currentIdx++;
+                renderQuestion();
+            } else {
+                alert("Incorrect choice! Try again.");
+            }
+        };
+        optBox.appendChild(btn);
+    });
+}
+
+function updateScore() {
+    const s = document.getElementById('score');
+    s.innerText = score;
+    s.style.color = score < 0 ? 'var(--error)' : 'var(--success)';
+}
+
+function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+}
+
+function showFinish() {
+    const card = document.getElementById('game-card');
+    card.innerHTML = `
+        <div style="text-align: center;">
+            <h1 style="font-size: 3rem;">🏆</h1>
+            <h2>Game Over!</h2>
+            <p style="font-size: 1.5rem;">Final Score: <b>${score}</b></p>
+            <button class="option-btn" onclick="location.reload()" style="max-width: 200px; margin: 20px auto; border-color: var(--primary);">Retry</button>
+        </div>
+    `;
+}
+
+init();
+</script>
+</body>
+</html>
