@@ -178,7 +178,35 @@ const database = [
     { s: ["He", "finishs", "the", "test", "an", "hour", "ago", "."], err: 1, fix: ["finished", "finish", "finishing"], correct: 0 },
     { s: ["I", "am", "stayed", "home", "last", "Monday", "."], err: 1, fix: ["(удалить)", "was", "did"], correct: 0 },
     { s: ["Do", "they", "arrive", "on", "time", "yesterday", "?"], err: 0, fix: ["Did", "Does", "Doing"], correct: 0 },
-    { s: ["We", "danced", "all", "night", "last", "Saturday", "?"], err: 6, fix: [".", "!", "..."], correct: 0 }
+    { s: ["We", "danced", "all", "night", "last", "Saturday", "?"], err: 6, fix: [".", "!", "..."], correct: 0 }, { s: ["He", "doed", "his", "homework", "yesterday", "."], err: 1, fix: ["did", "do", "does"], correct: 0 },
+
+{ s: ["She", "didn't", "went", "to", "school", "yesterday", "."], err: 2, fix: ["go", "goes", "going"], correct: 0 },
+
+{ s: ["They", "didn't", "ate", "pizza", "."], err: 2, fix: ["eat", "eats", "eating"], correct: 0 },
+
+{ s: ["I", "didn't", "saw", "him", "yesterday", "."], err: 2, fix: ["see", "sees", "seeing"], correct: 0 },
+
+{ s: ["We", "didn't", "took", "the", "bus", "."], err: 2, fix: ["take", "takes", "taking"], correct: 0 },
+
+{ s: ["She", "didn't", "wrote", "a", "letter", "."], err: 2, fix: ["write", "writes", "writing"], correct: 0 },
+
+{ s: ["Did", "you", "went", "to", "the", "zoo", "?"], err: 2, fix: ["go", "goes", "going"], correct: 0 },
+
+{ s: ["Did", "she", "ate", "the", "cake", "?"], err: 2, fix: ["eat", "eats", "eating"], correct: 0 },
+
+{ s: ["Did", "they", "saw", "the", "film", "?"], err: 2, fix: ["see", "sees", "seeing"], correct: 0 },
+
+{ s: ["Did", "he", "took", "your", "book", "?"], err: 2, fix: ["take", "takes", "taking"], correct: 0 },
+
+{ s: ["Did", "you", "wrote", "the", "test", "?"], err: 2, fix: ["write", "writes", "writing"], correct: 0 },
+
+{ s: ["Did", "she", "bought", "a", "new", "bag", "?"], err: 2, fix: ["buy", "buys", "buying"], correct: 0 },
+
+{ s: ["They", "didn't", "gave", "me", "a", "gift", "."], err: 2, fix: ["give", "gives", "giving"], correct: 0 },
+
+{ s: ["He", "didn't", "made", "a", "cake", "."], err: 2, fix: ["make", "makes", "making"], correct: 0 },
+
+{ s: ["We", "didn't", "swam", "in", "the", "lake", "."], err: 2, fix: ["swim", "swims", "swimming"], correct: 0 }
 ];
 
 let score = 0;
@@ -295,4 +323,5 @@ function showFinish() {
 init();
 </script>
 </body>
+
 </html>
